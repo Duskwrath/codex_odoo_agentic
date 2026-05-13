@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="partner_demo_approval_customer" model="res.partner">
+        <field name="name">Approval Demo Customer</field>
+    </record>
+
+    <record id="product_demo_approval_service" model="product.product">
+        <field name="name">Approval Demo Service</field>
+        <field name="detailed_type">service</field>
+        <field name="list_price">1500.0</field>
+        <field name="standard_price">100.0</field>
+    </record>
+
+    <record id="sale_order_demo_low" model="sale.order">
+        <field name="partner_id" ref="partner_demo_approval_customer"/>
+        <field name="approval_status">draft</field>
+        <field name="order_line" eval="[(0, 0, {
+            'name': 'Approval Demo Service',
+            'product_id': ref('product_demo_approval_service'),
+            'product_uom_qty': 2.0,
+            'price_unit': 1500.0,
+        })]"/>
+    </record>
+
+    <record id="sale_order_demo_mid" model="sale.order">
+        <field name="partner_id" ref="partner_demo_approval_customer"/>
+        <field name="approval_status">waiting_manager</field>
+        <field name="order_line" eval="[(0, 0, {
+            'name': 'Approval Demo Service',
+            'product_id': ref('product_demo_approval_service'),
+            'product_uom_qty': 5.0,
+            'price_unit': 1500.0,
+        })]"/>
+    </record>
+
+    <record id="sale_order_demo_high" model="sale.order">
+        <field name="partner_id" ref="partner_demo_approval_customer"/>
+        <field name="approval_status">waiting_finance</field>
+        <field name="order_line" eval="[(0, 0, {
+            'name': 'Approval Demo Service',
+            'product_id': ref('product_demo_approval_service'),
+            'product_uom_qty': 15.0,
+            'price_unit': 1500.0,
+        })]"/>
+    </record>
+</odoo>

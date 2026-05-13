@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="group_sale_approval_manager" model="res.groups">
+        <field name="name">Sales Approval Manager</field>
+        <field name="category_id" ref="base.module_category_sales_management"/>
+        <field name="implied_ids" eval="[(4, ref('sales_team.group_sale_manager'))]"/>
+    </record>
+
+    <record id="group_sale_approval_finance" model="res.groups">
+        <field name="name">Sales Approval Finance</field>
+        <field name="category_id" ref="base.module_category_sales_management"/>
+        <field name="implied_ids" eval="[(4, ref('sales_team.group_sale_salesman'))]"/>
+    </record>
+
+    <record id="group_sale_approval_gm" model="res.groups">
+        <field name="name">Sales Approval General Manager</field>
+        <field name="category_id" ref="base.module_category_sales_management"/>
+        <field name="implied_ids" eval="[(4, ref('sales_team.group_sale_salesman'))]"/>
+    </record>
+</odoo>
