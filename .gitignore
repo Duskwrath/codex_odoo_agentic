@@ -9,6 +9,7 @@ odoo_pg_pass
 # Distribution / packaging
 .Python
 .idea
+./config
 build/
 develop-eggs/
 dist/
