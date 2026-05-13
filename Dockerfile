@@ -1,7 +1,6 @@
 FROM odoo:19.0
 USER root
 
-COPY ./addons /mnt/extra-addons
 WORKDIR /opt/odoo
 
 ENV DEBIAN_FRONTEND=noninteractive

@@ -1,8 +1,9 @@
 from odoo.exceptions import AccessError, UserError
-from odoo.tests.common import SavepointCase
+from odoo.tests.common import TransactionCase, tagged
 
 
-class TestSaleOrderApproval(SavepointCase):
+@tagged("sale_order_approval")
+class TestSaleOrderApproval(TransactionCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -46,13 +47,17 @@ class TestSaleOrderApproval(SavepointCase):
     @classmethod
     def _create_user(cls, login, group_xmlids):
         groups = [cls.env.ref(xmlid).id for xmlid in group_xmlids]
-        return cls.env["res.users"].with_context(no_reset_password=True).create(
-            {
-                "name": login.replace("_", " ").title(),
-                "login": login,
-                "email": f"{login}@example.com",
-                "groups_id": [(6, 0, groups)],
-            }
+        return (
+            cls.env["res.users"]
+            .with_context(no_reset_password=True)
+            .create(
+                {
+                    "name": login.replace("_", " ").title(),
+                    "login": login,
+                    "email": f"{login}@example.com",
+                    "group_ids": [(6, 0, groups)],
+                }
+            )
         )
 
     @classmethod
@@ -98,8 +103,12 @@ class TestSaleOrderApproval(SavepointCase):
         order.with_user(self.manager_user).action_approve_order()
 
         self.assertEqual(order.approval_status, "approved")
-        self.assertEqual(order.approval_log_ids[0].action, "approved")
-        self.assertEqual(order.approval_log_ids[1].action, "requested")
+        self.assertEqual(
+            order.approval_log_ids.sorted(lambda log: log.id, reverse=True).mapped(
+                "action"
+            ),
+            ["approved", "requested"],
+        )
 
     def test_finance_then_general_manager_route(self):
         order = self._create_order(25000.0)
@@ -113,7 +122,9 @@ class TestSaleOrderApproval(SavepointCase):
         order.with_user(self.gm_user).action_approve_order()
         self.assertEqual(order.approval_status, "approved")
         self.assertEqual(
-            order.approval_log_ids.mapped("action"),
+            order.approval_log_ids.sorted(lambda log: log.id, reverse=True).mapped(
+                "action"
+            ),
             ["approved", "approved", "requested"],
         )
 
@@ -137,7 +148,7 @@ class TestSaleOrderApproval(SavepointCase):
         order.with_user(self.manager_user).action_reject_order("Budget rejected")
 
         self.assertEqual(order.approval_status, "rejected")
-        self.assertIn("Budget rejected", order.approval_log_ids[0].note)
+        self.assertIn("Budget rejected", order.approval_log_ids.mapped("note"))
 
         with self.assertRaises(UserError):
             order.with_user(self.sales_user).action_confirm()

@@ -41,14 +41,14 @@
             <xpath expr="//notebook" position="inside">
                 <page string="Approval History">
                     <field name="approval_log_ids" readonly="1">
-                        <tree create="0" delete="0" edit="0">
+                        <list create="0" delete="0" edit="0">
                             <field name="action_date"/>
                             <field name="user_id"/>
                             <field name="action"/>
                             <field name="from_status"/>
                             <field name="to_status"/>
                             <field name="note"/>
-                        </tree>
+                        </list>
                     </field>
                 </page>
             </xpath>

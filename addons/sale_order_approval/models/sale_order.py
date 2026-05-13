@@ -40,8 +40,10 @@ class SaleOrder(models.Model):
         records_to_reset = self.env["sale.order"]
         if should_reset:
             records_to_reset = self.filtered(
-                lambda order: order.state in {"draft", "sent"}
-                and order.approval_status != "draft"
+                lambda order: (
+                    order.state in {"draft", "sent"}
+                    and order.approval_status != "draft"
+                )
             )
         result = super().write(vals)
         if should_reset:
@@ -56,7 +58,9 @@ class SaleOrder(models.Model):
                 order._update_approval_status(
                     new_status="approved",
                     action="auto_approved",
-                    note=_("Order auto-approved because untaxed amount is below 5,000."),
+                    note=_(
+                        "Order auto-approved because untaxed amount is below 5,000."
+                    ),
                 )
                 continue
             order._update_approval_status(
@@ -71,10 +75,11 @@ class SaleOrder(models.Model):
             order._ensure_approvable_state()
             order._check_approval_access()
             next_status, note = order._get_next_status_after_approval()
-            order._update_approval_status(
+            order.sudo()._update_approval_status(
                 new_status=next_status,
                 action="approved",
                 note=note,
+                acting_user=self.env.user,
             )
         return True
 
@@ -82,10 +87,11 @@ class SaleOrder(models.Model):
         for order in self:
             order._ensure_approvable_state()
             order._check_approval_access()
-            order._update_approval_status(
+            order.sudo()._update_approval_status(
                 new_status="rejected",
                 action="rejected",
                 note=reason or _("Order rejected during approval."),
+                acting_user=self.env.user,
             )
         return True
 
@@ -107,7 +113,9 @@ class SaleOrder(models.Model):
                 continue
             order.approval_status = "draft"
             order.message_post(
-                body=_("Approval status reset to draft because the quotation was updated.")
+                body=_(
+                    "Approval status reset to draft because the quotation was updated."
+                )
             )
 
     def _ensure_approvable_state(self):
@@ -136,7 +144,9 @@ class SaleOrder(models.Model):
         if self.approval_status == "waiting_manager":
             return "approved", _("Order approved by Sales Manager.")
         if self.approval_status == "waiting_finance":
-            return "waiting_gm", _("Order approved by Finance Manager and sent to General Manager.")
+            return "waiting_gm", _(
+                "Order approved by Finance Manager and sent to General Manager."
+            )
         if self.approval_status == "waiting_gm":
             return "approved", _("Order approved by General Manager.")
         raise UserError(_("There is no approval action pending on this quotation."))
@@ -145,8 +155,12 @@ class SaleOrder(models.Model):
         self.ensure_one()
         messages = {
             "draft": _("Request approval before confirming this quotation."),
-            "waiting_manager": _("This quotation is waiting for Sales Manager approval."),
-            "waiting_finance": _("This quotation is waiting for Finance Manager approval."),
+            "waiting_manager": _(
+                "This quotation is waiting for Sales Manager approval."
+            ),
+            "waiting_finance": _(
+                "This quotation is waiting for Finance Manager approval."
+            ),
             "waiting_gm": _("This quotation is waiting for General Manager approval."),
             "rejected": _("This quotation was rejected and cannot be confirmed."),
         }
@@ -166,21 +180,24 @@ class SaleOrder(models.Model):
         if not required_group:
             raise UserError(_("There is no approval action pending on this quotation."))
         if not self.env.user.has_group(required_group):
-            raise AccessError(_("You do not have permission to approve or reject this quotation."))
+            raise AccessError(
+                _("You do not have permission to approve or reject this quotation.")
+            )
 
-    def _update_approval_status(self, new_status, action, note):
+    def _update_approval_status(self, new_status, action, note, acting_user=None):
         """Apply an approval transition, log it, and notify followers."""
         self.ensure_one()
+        acting_user = acting_user or self.env.user
         previous_status = self.approval_status
         self.approval_status = new_status
         self.env["sale.order.approval.log"].create(
             {
                 "order_id": self.id,
-                "user_id": self.env.user.id,
+                "user_id": acting_user.id,
                 "action": action,
                 "from_status": previous_status,
                 "to_status": new_status,
                 "note": note,
             }
         )
-        self.message_post(body=note)
+        self.message_post(body=note, author_id=acting_user.partner_id.id)
