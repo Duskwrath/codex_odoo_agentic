@@ -1,0 +1,16 @@
+repos:
+  - repo: local
+    hooks:
+      - id: ruff-check
+        name: ruff check
+        entry: ruff check addons scripts
+        language: system
+        pass_filenames: false
+        types_or: [python]
+
+      - id: ruff-format
+        name: ruff format
+        entry: ruff format addons scripts
+        language: system
+        pass_filenames: false
+        types_or: [python]

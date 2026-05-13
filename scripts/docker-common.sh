@@ -6,17 +6,40 @@ DB_SERVICE="${DB_SERVICE:-db}"
 WORKSPACE_DIR="${WORKSPACE_DIR:-/workspace}"
 HOST_UID="${HOST_UID:-$(id -u)}"
 HOST_GID="${HOST_GID:-$(id -g)}"
+DOCKER_CMD=()
 
-docker_compose() {
-  docker compose "$@"
-}
+select_docker_cmd() {
+  if [ "${#DOCKER_CMD[@]}" -gt 0 ]; then
+    return
+  fi
 
-require_docker() {
   if ! command -v docker >/dev/null 2>&1; then
     echo "ERROR: docker is required but not installed or not on PATH"
     exit 127
   fi
-  docker compose version >/dev/null
+
+  if docker compose version >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
+    DOCKER_CMD=(docker)
+    return
+  fi
+
+  if command -v sudo >/dev/null 2>&1; then
+    DOCKER_CMD=(sudo docker)
+    return
+  fi
+
+  echo "ERROR: docker compose is not available or cannot access the Docker daemon"
+  echo "Try running with Docker permissions or ensure 'sudo docker compose' works."
+  exit 1
+}
+
+docker_compose() {
+  select_docker_cmd
+  "${DOCKER_CMD[@]}" compose "$@"
+}
+
+require_docker() {
+  select_docker_cmd
 }
 
 build_odoo_image() {
