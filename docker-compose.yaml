@@ -1,37 +1,35 @@
-version: '3.1'
 services:
   web:
     build:
       context: .
-#    image: erp7/odoo:GOLIVE
     depends_on:
       - db
+    working_dir: /workspace
     ports:
       - "8069:8069"
       - "8072:8072"
     volumes:
+      - .:/workspace
+      - ./addons:/mnt/extra-addons
       - odoo-web-data:/var/lib/odoo
       - ./config:/etc/odoo
     environment:
-      - PASSWORD_FILE=/run/secrets/postgresql_password
-    secrets:
-      - postgresql_password
+      - HOST=db
+      - PORT=5432
+      - USER=odoo
+      - PASSWORD=odoo
+    command:
+      - --config=/etc/odoo/odoo.conf
   db:
     image: pgvector/pgvector:pg17
     environment:
       - POSTGRES_DB=postgres
-      - POSTGRES_PASSWORD_FILE=/run/secrets/postgresql_password
+      - POSTGRES_PASSWORD=odoo
       - POSTGRES_USER=odoo
       - PGDATA=/var/lib/postgresql/data/pgdata
     volumes:
       - odoo-db-data:/var/lib/postgresql/data/pgdata
-    secrets:
-      - postgresql_password
 volumes:
   odoo-web-data:
   odoo-db-data:
   pgadmin-data:
-
-secrets:
-  postgresql_password:
-    file: odoo_pg_pass

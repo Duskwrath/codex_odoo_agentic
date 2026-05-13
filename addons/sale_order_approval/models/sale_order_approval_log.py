@@ -29,11 +29,15 @@ class SaleOrderApprovalLog(models.Model):
         readonly=True,
     )
     from_status = fields.Selection(
-        selection=lambda self: self.env["sale.order"]._fields["approval_status"].selection,
+        selection=lambda self: (
+            self.env["sale.order"]._fields["approval_status"].selection
+        ),
         readonly=True,
     )
     to_status = fields.Selection(
-        selection=lambda self: self.env["sale.order"]._fields["approval_status"].selection,
+        selection=lambda self: (
+            self.env["sale.order"]._fields["approval_status"].selection
+        ),
         readonly=True,
     )
     note = fields.Char(readonly=True)

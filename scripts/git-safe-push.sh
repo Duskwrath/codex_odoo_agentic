@@ -3,7 +3,7 @@ set -euo pipefail
 
 BRANCH="$(git rev-parse --abbrev-ref HEAD)"
 
-PROTECTED_BRANCHES=("main" "master" "production" "staging")
+PROTECTED_BRANCHES=("UAT" "GOLIVE" "STAGING")
 
 for protected in "${PROTECTED_BRANCHES[@]}"; do
   if [[ "$BRANCH" == "$protected" ]]; then
