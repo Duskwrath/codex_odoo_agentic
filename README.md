@@ -1,7 +1,6 @@
 # Odoo Agentic Development With Codex CLI
 
-This document explains how to use Codex CLI for agentic Odoo addon
-development. The goal is to give Codex enough project context, clear delivery
+The goal is to give Codex enough project context, clear delivery
 rules, and repeatable verification commands so it can safely build, test, and
 review Odoo customizations.
 
@@ -75,27 +74,22 @@ project, and use the correct relative paths.
 Interactive mode:
 
 ```bash
-cd /home/slo/Documents/codex_odoo_agentic
+cd path/to/codex_odoo_agentic
 codex
 ```
 
 Start with an initial prompt:
 
 ```bash
-codex -C /home/slo/Documents/codex_odoo_agentic "Inspect this Odoo addon workspace and summarize the development rules."
+ "Inspect this Odoo addon workspace and summarize the development rules."
 ```
 
 Run a non-interactive task:
 
 ```bash
-codex exec -C /home/slo/Documents/codex_odoo_agentic "Review the custom addons and report missing tests or security files."
+ "Review the custom addons and report missing tests or security files."
 ```
 
-Review uncommitted changes:
-
-```bash
-codex -C /home/slo/Documents/codex_odoo_agentic review --uncommitted
-```
 
 ## Step-by-Step Agentic Workflow
 
